@@ -241,6 +241,10 @@ body::before{content:"";position:fixed;inset:0;z-index:94;pointer-events:none;
 .ribbon{padding:26px 0;background:var(--nuit-3);border-block:1px solid rgba(221,177,104,.12);overflow:hidden}
 .ribbon-in{display:flex;gap:36px;align-items:center;justify-content:center;flex-wrap:wrap}
 .ribbon-in span{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--creme-pale)}
+.ribbon-in a{display:inline-flex;align-items:center;gap:8px}
+.ribbon-in a::after{content:"↗";font-size:12px;color:var(--or);opacity:.75;transition:transform .3s var(--ease)}
+.ribbon-in a:hover span{color:var(--or)}
+.ribbon-in a:hover::after{transform:translate(3px,-3px)}
 .ribbon-in i{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--or);opacity:.7}
 
 /* ============ JADE TAMURA ============ */
@@ -452,9 +456,9 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
 <!-- ============ RUBAN DES PRATIQUES ============ -->
 <div class="ribbon" id="pratiques">
   <div class="wrap ribbon-in">
-    <span>Ayur Yoga</span><i></i>
-    <span>Méditation</span><i></i>
-    <span>Yoga Nidra</span><i></i>
+    <a href="pratiques/ayur-yoga.html"><span>Ayur Yoga</span></a><i></i>
+    <a href="pratiques/meditation.html"><span>Méditation</span></a><i></i>
+    <a href="pratiques/yoga-nidra.html"><span>Yoga Nidra</span></a><i></i>
     <span>Abhyanga</span><i></i>
     <span>Souffle</span><i></i>
     <span>Explorations sensibles</span>
