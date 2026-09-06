@@ -1,0 +1,50 @@
+/* Nova Yoga — traverser le lac, entrer dans une Porte. */
+@view-transition{navigation:auto}
+:root{--cinema-x:0deg;--cinema-y:0deg;--cinema-progress:0;--cinema-ease:cubic-bezier(.16,1,.3,1)}
+body.cinema{background:#173a31}
+.cinema .open{perspective:1400px;isolation:isolate}
+.cinema .open-media{transform:translateZ(-80px) scale(1.18);opacity:.88;transition:transform .8s var(--cinema-ease)}
+.cinema .open-in{transform-style:preserve-3d;transform:rotateX(var(--cinema-y)) rotateY(var(--cinema-x));transition:transform .65s var(--cinema-ease)}
+.cinema .open h1{transform:translateZ(65px);text-shadow:0 20px 50px #173a3180}
+.cinema .open .la-ou{transform:translateZ(95px)}
+.cinema .open .commencez{transform:translateZ(45px)}
+.cinema .open::after{background:linear-gradient(180deg,#173a3133,transparent 45%,#173a31dd)}
+.cinema-orbit{position:absolute;left:50%;top:64%;width:min(76vw,880px);aspect-ratio:1;pointer-events:none;border:1px solid #ddb16877;border-radius:50%;transform:translate(-50%,-50%) rotateX(76deg);box-shadow:0 20px 55px #ddb16818,inset 0 1px #fff4;z-index:1}
+.cinema-orbit::before,.cinema-orbit::after{content:'';position:absolute;inset:12%;border:1px solid #f7efe533;border-radius:50%}
+.cinema-orbit::after{inset:25%}
+.cinema .pinwrap{background:#173a31}
+.cinema .pin{perspective:1200px}
+.cinema .chap.on{transform:translateZ(50px)}
+.cinema .stage::after{background:linear-gradient(100deg,#173a31ee 8%,#173a3188 55%,#173a3122)}
+.cinema .portes-sec{background:linear-gradient(180deg,#173a31,#24483e 65%,#173a31);border:0}
+.cinema .portes-stage{perspective:1500px;padding-block:20px}
+.cinema .portes-stage::after{content:'';position:absolute;bottom:15px;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,#ddb16899,transparent);pointer-events:none}
+.cinema .portes-grid{perspective:950px;padding-bottom:85px;perspective-origin:50% 40%}
+.cinema .porte-nuit{background:#203c33;border-color:#d8c0a044;box-shadow:0 38px 65px -30px #081c16dd;cursor:pointer}
+.cinema .porte-media img{opacity:.95}
+.cinema .porte-media::after{background:linear-gradient(0deg,#203c33,transparent 75%)}
+.cinema .porte-nuit[data-active=true]{border-color:#ddb168;box-shadow:0 50px 70px -30px #061b16}
+.cinema .porte-nuit[data-chosen=true]{--coverflow-y:-18px;border-color:#fff5dc}
+.cinema .reveal-inner{background:#f7efe5;color:#293b34;border:0;border-radius:4px;box-shadow:0 30px 60px -30px #061b16;text-align:center}
+.cinema .porte-reveal h3{color:#173a31}
+.cinema .reveal-label,.cinema .fragment-label{color:#52634f}
+.cinema .reveal-threshold{color:#755631}
+.cinema .reveal-help,.cinema .reveal-reset{color:#3e5147}
+.cinema .fragment-choice{color:#293b34;background:#e9d2c244;border-color:#173a3133;transition:transform .35s var(--cinema-ease),background .25s}
+.cinema .fragment-choice:hover{background:#dfe3d5;transform:perspective(800px) translateZ(18px)}
+.cinema .fragment-choice::after{color:#52634f}
+.cinema .regards-sec{background:#173a31}
+.cinema .jade-sec{background:#24483e}
+.cinema .jade-photo{transform:perspective(1200px) rotateY(-5deg);box-shadow:20px 35px 55px -30px #071c17}
+.cinema .ribbon{background:#dfe3d5}
+.cinema .ribbon-in span{color:#173a31}
+.cinema-controls{position:fixed;right:20px;bottom:20px;z-index:96;display:flex;gap:8px;align-items:center}
+.cinema-controls button,.cinema-controls a{font:500 12px 'Mulish',sans-serif;padding:12px 16px;min-height:44px;border:1px solid #ddb16866;border-radius:30px;background:#173a31;color:#f7efe5;cursor:pointer;text-decoration:none}
+.cinema-controls :focus-visible{outline:2px solid #ddb168;outline-offset:4px}
+.cinema-progress{position:fixed;top:0;left:0;width:100%;height:2px;background:#ddb168;transform:scaleX(var(--cinema-progress));transform-origin:left;z-index:99;pointer-events:none}
+.cinema.motion-off .open-in,.cinema.motion-off .jade-photo{transform:none!important}
+.cinema.motion-off .open-media{transform:none!important}
+.cinema.motion-off .porte-nuit{transform:none!important;opacity:1!important;filter:none!important}
+.cinema.motion-off *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+@media(max-width:600px){.cinema-orbit{width:115vw;top:69%}.cinema-controls{right:10px;bottom:10px}.cinema-controls button,.cinema-controls a{font-size:11px;padding:10px 12px}.cinema .jade-photo{transform:none}.cinema .open{min-height:580px}}
+@media(prefers-reduced-motion:reduce){.cinema .open-in,.cinema .jade-photo,.cinema .open-media{transform:none}.cinema *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
