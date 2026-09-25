@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nova Yoga — Proposition B « Rituel »</title>
+<title>Nova Yoga — Rituel · Proposition Jade</title>
 <meta name="description" content="Et si le chemin commençait simplement ici ? Sept Portes, dix Regards — Nova Yoga, Jade Tamura.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -269,6 +269,28 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
 .mention p{margin:0;font-size:12px;line-height:1.8;letter-spacing:.06em;color:rgba(255,253,251,.5)}
 .mention p:first-child{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;letter-spacing:0;color:rgba(255,253,251,.8);margin-bottom:6px}
 </style>
+<style>
+/* Proposition Jade : la lumière entre dans les fragments, pas dans leur cadre. */
+.fragment-list{gap:16px;margin-top:24px}
+.fragment-choice{background:#eee1d6;color:#40332b;border-color:#d6c0af;font:400 16px/1.75 'Mulish',sans-serif;padding:24px 48px 24px 24px}
+.fragment-choice:nth-child(3n+2){background:#e4e7dc}
+.fragment-choice:nth-child(3n){background:#efded8}
+.fragment-choice::after{color:#66503c;top:25px}
+.fragment-choice:hover,.fragment-choice:focus-visible{background:#f7efe5;color:#40332b;border-color:#b38c59}
+.fragment-label{font-size:12px;color:#e3d3c4;letter-spacing:.12em}
+.reveal-inner{background:#2a211c}
+.reveal-help{font-size:17px;line-height:1.8}
+.regards-sec{padding:26px 0 48px;background:#2b241f}
+.regards-invite{padding:28px 0;gap:28px;align-items:center}
+.regards-head h2{font-size:clamp(26px,3vw,36px);margin:0 0 12px}
+.regards-head p{font-size:16px;line-height:1.75;margin:0;max-width:48ch}
+.regards-link{font-size:12px;letter-spacing:.12em}
+.jade-content p{color:#e1d6cb;line-height:1.85}
+.jade-sec{border-top:1px solid #89917a40}
+.nav a,.foot-nav a{min-height:44px;display:inline-flex;align-items:center}
+a:focus-visible,button:focus-visible,[role=button]:focus-visible{outline:2px solid #ddb168!important;outline-offset:5px}
+@media(max-width:680px){.fragment-choice{font-size:16px}.regards-invite{padding-inline:22px}.reveal-inner{padding-inline:16px}}
+</style>
 </head>
 <body>
 
@@ -278,7 +300,6 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
     <nav class="nav">
       <a href="#portes">Les Portes</a>
       <a href="#pratiques">Pratiques</a>
-      <a href="regards.html">Les Regards</a>
       <a href="#accompagnement">L’accompagnement</a>
       <a href="#jade" class="btn-mini">Jade Tamura</a>
     </nav>
@@ -441,18 +462,6 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
   </div>
 </section>
 
-<!-- ============ DIX REGARDS ============ -->
-<section class="regards-sec" id="regards">
-  <div class="wrap regards-invite">
-    <div class="regards-head rise">
-      <div class="eyebrow">Le socle philosophique</div>
-      <h2>Dix Regards pour approcher l’humain sans l’enfermer.</h2>
-      <p>Ils ne sont pas des étapes à franchir. Ils donnent à Nova Yoga sa manière de rencontrer le vivant, la présence, la sensibilité, la liberté et le chemin propre à chacun.</p>
-    </div>
-    <a class="regards-link rise d1" href="regards.html">Découvrir les dix Regards</a>
-  </div>
-</section>
-
 <!-- ============ RUBAN DES PRATIQUES ============ -->
 <div class="ribbon" id="pratiques">
   <div class="wrap ribbon-in">
@@ -478,6 +487,15 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
 </section>
 
 <!-- ============ PIED ============ -->
+<section class="regards-sec" id="regards" aria-labelledby="philosophie-title">
+  <div class="wrap regards-invite">
+    <div class="regards-head">
+      <h2 id="philosophie-title">Pour aller plus loin.</h2>
+      <p>Dix Regards pour approcher l’humain sans l’enfermer. Ils ne sont pas des étapes à franchir.</p>
+    </div>
+    <a class="regards-link" href="regards.html">La philosophie Nova Yoga</a>
+  </div>
+</section>
 <footer>
   <div class="wrap foot-top">
     <div class="logo-foot"><img src="images/nova-yoga-logo.svg" alt="Nova Yoga — Respirer, se déposer, être"></div>
@@ -491,7 +509,7 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
   </div>
   <div class="wrap mention">
     <p>Une Porte n’est ni une catégorie ni un diagnostic.</p>
-    <p>Nova Yoga · 36 parcours figés sur 36</p>
+    <p>Nova Yoga · Jade Tamura</p>
   </div>
 </footer>
 
