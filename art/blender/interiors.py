@@ -3,6 +3,8 @@ from math import sin,cos,pi,tau,exp
 from random import Random
 from canopies import gallery
 
+VOILES_DE_FOND_4=True
+
 def enclosure(g,n):
     rng=Random(100+n)
     if n==1:
@@ -32,7 +34,11 @@ def enclosure(g,n):
                 g.tube('Suture de feu',[(x*.86+.064*sin(i),y*.86,.16+i*h/19) for i in range(15)],.022,'gold')
         g.rock('Foyer de schiste',(0,2,.13),(1.2,.90,.36),'ink',14)
     if n==4:
-        for j in range(3):
+        # Fond de la salle : trois grands voiles opaques, dont l'écran film0 (géométrie et matières d'origine).
+        # Raccord : depuis la clairière la cible ne montre que le voile tendu de gardens.world4 devant les
+        # montagnes ; le jeu les fond donc selon la position de la caméra (atmosphere.js, FONDU_MONDE4),
+        # ils restent construits. VOILES_DE_FOND_4 = False les retire du GLB.
+        for j in range(3 if VOILES_DE_FOND_4 else 0):
             rows=[]
             for k in range(17):
                 t=k/16

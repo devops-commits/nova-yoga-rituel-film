@@ -1,12 +1,14 @@
 """Continuous lake, eight-shot causeway, clearing and seven radial passages."""
 import math
 from sculpt import Set, TAU
+from raccord_geometrie import ARC, ARC_CENTRE, arc
 
 ANGLES = [-135,-90,-45,0,45,90,135]
 PALETTE = ['clay','brass','ink','chalk','rose','jade','brass']
 # Arches relevées sur la dernière image du survol (plateforme-libre.jpg) : sombre à gauche (−45°),
-# laiton au centre (0°), cuivre rosé à droite (45°). Les mondes gardent PALETTE.
-ARCHES = ['clay','brass','ink','brass','copper','jade','brass']
+# laiton clair au centre (0°, 'brass4' : matière réservée à cette arche), cuivre rosé à droite (45°).
+# Les mondes gardent PALETTE.
+ARCHES = ['clay','brass','ink','brass4','copper','jade','brass']
 FILET = .06          # largeur du filet de laiton incrusté (m)
 AFFLEUREMENT = .008  # dépassement au-dessus de la pierre (m) : à fleur, sans marche ni ombre portée
 
@@ -73,12 +75,11 @@ def passage(materials,n):
         g.box('Dalle de seuil',(0,10+i*.94,-.17),(5.0,.92,.34),'chalk')
     for x in [-2.17,2.17]:
         g.tube('Ligne de passage',[(x,10,.025),(x,26,.025)],.026,'brass')
+    # Raccord : l'arche centrale (n = 4, face à la caméra de départ) est plus haute et plus ouverte dans la
+    # dernière image du survol ; cotes relevées dans raccord_geometrie.py. Les six autres gardent ARC.
+    spec=ARC_CENTRE if n==4 else ARC
     for j in range(2):
-        points=[]
-        for i in range(65):
-            t=math.pi*i/64
-            points.append((2.8*math.cos(t),14.4+j*.47, .09+4.9*math.sin(t)))
-        g.tube('Arc sculpté',points,.165 if j==0 else .052,ARCHES[n-1] if not j else 'gold')
+        g.tube('Arc sculpté',arc(spec,j*.47),spec['rayon'] if j==0 else .052*spec['rayon']/ARC['rayon'],ARCHES[n-1] if not j else 'gold')
     # Traces leading to a large basin, physically connected to the passage.
     room=Set(f'Monde {n:02}',materials,a,33)
     if n==1:return room
