@@ -1,8 +1,10 @@
 import { getEntree, ENTREES } from '../data-map.js';
 import { createExpedition } from './engine.js';
+import { playIntro } from './intro.js';
 
 const $=id=>document.getElementById(id);
-const canvas=$('view'),dialog=$('panel'),content=$('panelContent'),button=$('gesture');
+const expedition=$('expedition'),canvas=$('view'),dialog=$('panel'),content=$('panelContent'),button=$('gesture');
+const intro=playIntro(expedition,canvas);
 const shots=['Au bord du lac','La paume','La goutte','Les lignes de peau','Le pli','La chambre intérieure','Le bol','Le palier'];
 const cues=['Avance sur le lac en direction de la rive.','Regarde comment les lignes de la paume deviennent des reliefs.','Approche-toi de la goutte, puis regarde au-dessus de toi.','Longe les crêtes qui se dessinent dans la peau.','Suis la lumière à travers le pli.','Le passage s’ouvre sur la matière de la chambre.','Contourne le bol en suivant le chemin clair.','Sept entrées t’attendent au-delà du palier.'];
 const actions=['Déposer le galet','Faire vibrer les cordes','Réveiller la braise','Déployer le voile','Étendre le pigment','Libérer la goutte','Relier les fils'];
@@ -126,6 +128,7 @@ $('macro').onclick=()=>{magnify();canvas.focus({preventScroll:true});};
 $('mapButton').onclick=map;$('helpButton').onclick=help;$('walkHelp').onclick=help;
 addEventListener('hashchange',route);
 addEventListener('keydown',e=>{
+  if(expedition.inert)return;
   if(e.code==='KeyF'&&!dialog.open&&!e.repeat&&game&&!e.ctrlKey&&!e.metaKey){magnify();e.preventDefault();}
   if(e.code==='KeyE'&&!dialog.open&&!e.repeat&&game?.near){e.preventDefault();interact(game.near);}
 });
@@ -135,8 +138,16 @@ function unavailable(){
   $('hint').textContent='La scène 3D est indisponible sur cet appareil. Les 36 parcours de Jade sont accessibles ici.';
   button.hidden=false;button.textContent='Choisir une entrée';button.onclick=map;
 }
+// Encadrée par nova-yoga.html, la scène prévient dès que sa première image est à l'écran :
+// la dernière image du survol reste affichée jusque-là (pas de noir, pas de saut de cadre).
+function announce(ready=true){
+  if(window.parent===window)return;
+  const tell=()=>window.parent.postMessage({type:'nova-yoga:premiere-image',ready,hash:location.hash},location.origin==='null'?'*':location.origin);
+  if(ready)requestAnimationFrame(()=>requestAnimationFrame(tell));else tell();
+}
 try {
-  game=await createExpedition(canvas,{zone,interact,lost:unavailable,name:n=>getEntree(n).name,gestureName:n=>actions[n-1]});
-  $('macro').disabled=false;route();canvas.focus({preventScroll:true});
-}catch(error){console.error('Exploration 3D',error);unavailable();route();}
+  game=await createExpedition(canvas,{zone,interact,isCovered:()=>expedition.inert,firstFrame:announce,lost:unavailable,name:n=>getEntree(n).name,gestureName:n=>actions[n-1]});
+  $('macro').disabled=false;route();
+}catch(error){console.error('Exploration 3D',error);unavailable();route();announce(false);}
+finally{intro.sceneReady();}
 

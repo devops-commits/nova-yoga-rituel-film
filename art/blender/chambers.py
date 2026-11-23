@@ -69,7 +69,7 @@ def world3(g):
         x = random.choice([-1, 1]) * random.uniform(3.0, 6.5)
         y = random.uniform(-5.5, 6.0)
         h = random.uniform(1.5, 3.8)
-        g.ell("charcoal_tree_%d" % i, (x, y, h/2), (.38, .45, h/2), "basalt")
+        g.ell("charcoal_tree_%d" % i, (x, y, h/2), (.38, .45, h/2), "ash")
         g.tube("branch_%d" % i, [(x, y, h*.7), (x + random.uniform(-.8,.8), y+.2, h*.95), (x + random.uniform(-1.1,1.1), y+.3, h+random.uniform(.2,.8))], .11, "basalt")
     for i in range(10):
         x = random.choice([-1, 1]) * random.uniform(3.3, 6.0)
@@ -92,5 +92,5 @@ def world3(g):
         rows.append(row)
     g.surface("ash_cliff_film", rows, "film5")
     for i in range(5):
-        g.ell("cliff_stone_%d" % i, (-5.0 + .18*i, 4.0 + .5*i, .7 + .15*i), (.55, .45, .8), "ink")
+        g.ell("cliff_stone_%d" % i, (-5.0 + .18*i, 4.0 + .5*i, .7 + .15*i), (.55, .45, .8), "ash")
     g.ell("ember_core", (5.8, 1.0, 1.0), (.22, .22, .22), "gold")

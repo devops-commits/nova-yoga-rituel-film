@@ -4,6 +4,11 @@ from sculpt import Set, TAU
 
 ANGLES = [-135,-90,-45,0,45,90,135]
 PALETTE = ['clay','brass','ink','chalk','rose','jade','brass']
+# Arches relevées sur la dernière image du survol (plateforme-libre.jpg) : sombre à gauche (−45°),
+# laiton au centre (0°), cuivre rosé à droite (45°). Les mondes gardent PALETTE.
+ARCHES = ['clay','brass','ink','brass','copper','jade','brass']
+FILET = .06          # largeur du filet de laiton incrusté (m)
+AFFLEUREMENT = .008  # dépassement au-dessus de la pierre (m) : à fleur, sans marche ni ombre portée
 
 def ground(g,name,radius,material,height=0):
     rows=[]
@@ -11,8 +16,29 @@ def ground(g,name,radius,material,height=0):
         rows.append([(r*math.cos(-TAU*i/96),r*math.sin(-TAU*i/96),z) for i in range(97)])
     return g.surface(name,rows,material)
 
-def round_inlay(g,name,r,mat,z=.025,start=0,end=TAU):
-    g.tube(name,[(r*math.cos(start+(end-start)*i/110),r*math.sin(start+(end-start)*i/110),z) for i in range(111)],.025,mat)
+def inlay_rows(r,width=FILET,z=AFFLEUREMENT,start=0,end=TAU):
+    """Ruban plat incrusté : deux arêtes vives noyées dans la pierre, un méplat à fleur.
+
+    Rend (rangées, UV). Les rangées vont du bord intérieur au bord extérieur et tournent dans le sens
+    de ground() : la face regarde vers le haut. UV : u en travers, v le long (0,5 m de laiton par motif
+    avec l'échelle (1, 12) de pbr.py), pour un reflet qui se rompt le long du cercle.
+    """
+    count=max(110,round(abs(end-start)*r/.42))
+    chamfer=min(.006,width/4)
+    profile=[(-width/2,-.004),(-width/2+chamfer,z),(width/2-chamfer,z),(width/2,-.004)]
+    rows=[];uvs=[]
+    for k,(dr,dz) in enumerate(profile):
+        row=[];uv=[]
+        for i in range(count+1):
+            a=-(start+(end-start)*i/count)
+            row.append(((r+dr)*math.cos(a),(r+dr)*math.sin(a),dz))
+            uv.append((k/(len(profile)-1),abs(end-start)*r*i/count/6))
+        rows.append(row);uvs.append(uv)
+    return rows,uvs
+
+def round_inlay(g,name,r,mat,z=AFFLEUREMENT,start=0,end=TAU,width=FILET):
+    rows,uvs=inlay_rows(r,width,z,start,end)
+    return g.surface(name,rows,mat,uvs)
 
 def landscape(materials):
     g=Set('01 • Le lac et ses reliefs',materials)
@@ -52,7 +78,7 @@ def passage(materials,n):
         for i in range(65):
             t=math.pi*i/64
             points.append((2.8*math.cos(t),14.4+j*.47, .09+4.9*math.sin(t)))
-        g.tube('Arc sculpté',points,.165 if j==0 else .052,PALETTE[n-1] if not j else 'gold')
+        g.tube('Arc sculpté',points,.165 if j==0 else .052,ARCHES[n-1] if not j else 'gold')
     # Traces leading to a large basin, physically connected to the passage.
     room=Set(f'Monde {n:02}',materials,a,33)
     if n==1:return room

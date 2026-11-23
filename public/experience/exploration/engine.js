@@ -38,7 +38,7 @@ export async function createExpedition(canvas,callbacks){
   const input=createWalkInput(canvas,document.querySelector('#stick'),document.querySelector('#knob'));
   const compass=document.querySelector('#compass b'),marker=document.querySelector('#marker');
   let yaw=0,pitch=.02,paused=false,lastFrame=0,steps=[],scrollDistance=0,elapsed=0;
-  let macro=false;
+  let macro=false,drawn=false;
   let zone={kind:'',n:0},near=0,anim=0,animN=0,nextHud=0;
   const pos=camera.position;
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
@@ -137,7 +137,7 @@ export async function createExpedition(canvas,callbacks){
   }
   function frame(now){
     requestAnimationFrame(frame);
-    if(document.hidden){lastFrame=0;return;}
+    if(document.hidden||callbacks.isCovered()){lastFrame=0;return;}
     const dt=lastFrame?Math.min(.20,(now-lastFrame)/1000):0;
     lastFrame=now;elapsed+=dt;
     if(!paused){
@@ -166,6 +166,8 @@ export async function createExpedition(canvas,callbacks){
       camera.updateProjectionMatrix();
     }
     renderer.render(scene,camera);
+    // Première image réellement dessinée : la page qui nous encadre peut lever son image d'attente.
+    if(!drawn){drawn=true;callbacks.firstFrame?.();}
   }
   const ray=new T.Raycaster(),ground=new T.Plane(new T.Vector3(0,1,0),0),hit=new T.Vector3();
   let down=null;

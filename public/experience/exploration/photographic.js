@@ -53,7 +53,13 @@ const skinContact=`
   float caustic=exp(-pow((r-1.03)/.145,2.))*smoothstep(-.15,.85,d.x);
   outgoingLight=outgoingLight*(1.-.68*shadow)+vec3(.14,.086,.046)*caustic;
 `;
-export function finishPhotographicMaterials(root,clock,liveTexture,filmMix){
+// Réglages ciel/lac par défaut = aucun effet (poids nul) ; atmosphere.js passe son bloc RACCORD.
+const SANS_RACCORD={clairiere:'0.',crete:1,ciel:0,cielBas:'vec3(0.)',cielHaut:'vec3(0.)',cielPente:[.38,.75],nuages:0,nuage:'vec3(0.)',
+  lac:'vec3(0.)',lacRive:-.0235,lacFondu:0,lisere:0,lisereTeinte:'vec3(0.)',lisereHaut:[-.010,.008],
+  masqueCiel:null,cielBord:[.35,.65],cretesAir:0,cretesTeinte:'vec3(0.)',nuagesLegers:0,nuagesPente:[.07,.20,.30,.44]};
+const glsl=n=>Number(n).toFixed(5);
+export function finishPhotographicMaterials(root,clock,liveTexture,filmMix,raccord){
+  const R={...SANS_RACCORD,...raccord};
   const textured=new Set();
   root.traverse(o=>{if(o.isMesh)for(const m of [].concat(o.material))textured.add(m);});
   const projectionMaps=new Map();
@@ -150,6 +156,64 @@ export function finishPhotographicMaterials(root,clock,liveTexture,filmMix){
         };
         m.customProgramCacheKey=()=>m.name+'-contact';
       }
+      if(m.name==='lakeplate'){
+        // Massifs photographiés vus de la clairière : voile d'air et brume de rive (rien ne change au bord du lac).
+        // Clé « ciel » tirée de la photo elle-même (art/outils/masque-ciel.mjs) : rouge = ciel, vert = profondeur
+        // sous la crête. Le contour du maillage (photographic_sets.edge, 121 points par secteur) ne sert plus de masque.
+        const plateCle=new THREE.Texture(),plateClePret={value:0};
+        plateCle.flipY=false;plateCle.colorSpace=THREE.NoColorSpace;plateCle.generateMipmaps=false;plateCle.minFilter=THREE.LinearFilter;
+        if(R.masqueCiel)new THREE.ImageLoader().load(R.masqueCiel,image=>{plateCle.image=image;plateCle.needsUpdate=true;plateClePret.value=1;});
+        m.onBeforeCompile=shader=>{
+          shader.uniforms.uPlateCle={value:plateCle};shader.uniforms.uPlateClePret=plateClePret;
+          // Depuis la terrasse centrale seulement (poids R.clairiere) : massifs mis à l'échelle R.crete autour du
+          // niveau de l'eau (vPlateY garde la hauteur d'origine pour le voile et la brume déjà calés).
+          shader.vertexShader='varying float vPlateY;varying vec3 vPlateWorld;\n'+shader.vertexShader
+            .replace('#include <begin_vertex>',`#include <begin_vertex>
+              vPlateY=(modelMatrix*vec4(transformed,1.)).y;
+              transformed.y*=mix(1.,${glsl(R.crete)},${R.clairiere});`)
+            .replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n vPlateWorld=(modelMatrix*vec4(transformed,1.)).xyz;');
+          shader.fragmentShader=`varying float vPlateY;varying vec3 vPlateWorld;uniform sampler2D uPlateCle;uniform float uPlateClePret;
+            float plateHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+            float plateBruit(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+              return mix(mix(mix(plateHash(i),plateHash(i+vec3(1,0,0)),f.x),mix(plateHash(i+vec3(0,1,0)),plateHash(i+vec3(1,1,0)),f.x),f.y),
+                mix(mix(plateHash(i+vec3(0,0,1)),plateHash(i+vec3(1,0,1)),f.x),mix(plateHash(i+vec3(0,1,1)),plateHash(i+vec3(1,1,1)),f.x),f.y),f.z);}
+            `+shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+            float plateAway=1.-smoothstep(10.,34.,cameraPosition.z);
+            float plateLum=dot(totalEmissiveRadiance,vec3(.2126,.7152,.0722));
+            vec3 plateAir=mix(totalEmissiveRadiance,vec3(.30,.30,.36),.14+.22*(1.-smoothstep(0.,42.,vPlateY)));
+            plateAir=mix(plateAir,vec3(.62,.52,.52),.62*(1.-smoothstep(.4,7.,vPlateY)));
+            totalEmissiveRadiance=mix(totalEmissiveRadiance,plateAir,plateAway);
+            // Ciel et lac de la dernière image du survol, vus de la terrasse centrale.
+            float plateClair=${R.clairiere};
+            if(plateClair>0.){
+              // Tangente d'élévation du rayon de vue : les réglages se lisent directement en hauteur d'écran.
+              float plateTan=(vPlateWorld.y-cameraPosition.y)/max(1.,length(vPlateWorld.xz-cameraPosition.xz));
+              // Ciel = là où la photo est du ciel (clé lue dans le masque, fondu de ≈ 3 px le long des vraies crêtes),
+              // jamais d'après la géométrie : sommets enneigés et crêtes lointaines restent ceux de la photo.
+              vec2 plateCleRG=texture2D(uPlateCle,vEmissiveMapUv).rg;
+              float plateSky=smoothstep(${glsl(R.cielBord[0])},${glsl(R.cielBord[1])},plateCleRG.r)*uPlateClePret;
+              // Perspective aérienne : les crêtes déjà claires de la photo (donc lointaines) fondent vers le ciel
+              // près de leur ligne de faîte ; les versants proches, sombres, ne sont pas éclaircis.
+              float plateFaite=(1.-plateCleRG.g)*(1.-plateCleRG.g)*smoothstep(.02,.08,plateLum)*uPlateClePret;
+              totalEmissiveRadiance=mix(totalEmissiveRadiance,${R.cretesTeinte},${glsl(R.cretesAir)}*plateFaite*plateClair*(1.-plateSky));
+              vec3 plateCiel=mix(${R.cielBas},${R.cielHaut},smoothstep(${glsl(R.cielPente[0])},${glsl(R.cielPente[1])},plateTan));
+              plateCiel=mix(plateCiel,${R.nuage},${glsl(R.nuages)}*smoothstep(.10,.22,plateLum));
+              // Nuages légers, étirés à l'horizontale, dans la bande R.nuagesPente au-dessus des crêtes (ciel seulement).
+              vec3 plateVue=normalize(vPlateWorld-cameraPosition)*vec3(5.,30.,5.);
+              float plateNuee=.6*plateBruit(plateVue)+.3*plateBruit(plateVue*2.3+7.)+.1*plateBruit(plateVue*5.1+19.);
+              plateNuee=smoothstep(.50,.72,plateNuee)*smoothstep(${glsl(R.nuagesPente[0])},${glsl(R.nuagesPente[1])},plateTan)*(1.-smoothstep(${glsl(R.nuagesPente[2])},${glsl(R.nuagesPente[3])},plateTan));
+              plateCiel=mix(plateCiel,${R.nuage},${glsl(R.nuagesLegers)}*plateNuee);
+              totalEmissiveRadiance=mix(totalEmissiveRadiance,plateCiel,plateSky*plateClair*${glsl(R.ciel)});
+              // Pied des massifs : liseré de brume sur la rive, puis eau sombre sous la ligne d'eau de la cible.
+              float plateFoot=(1.-plateSky)*plateClair;
+              float plateRim=(plateTan-(${glsl(R.lisereHaut[0])}))/${glsl(R.lisereHaut[1])};
+              totalEmissiveRadiance=mix(totalEmissiveRadiance,${R.lisereTeinte},${glsl(R.lisere)}*exp(-plateRim*plateRim)*plateFoot);
+              float plateEau=1.-smoothstep(${glsl(R.lacRive)}-.0012,${glsl(R.lacRive)}+.0012,plateTan);
+              totalEmissiveRadiance=mix(totalEmissiveRadiance,${R.lac},plateEau*plateFoot);
+            }`);
+        };
+        m.customProgramCacheKey=()=>'lakeplate-raccord-ciel-lac-cle';
+      }
       if(m.name==='lakereflection'){
         m.onBeforeCompile=shader=>{
           shader.uniforms.uWave=clock;
@@ -166,6 +230,20 @@ export function finishPhotographicMaterials(root,clock,liveTexture,filmMix){
             p.x+=band*(.00065*sin(p.y*137.+uWave*.53)+.00032*sin(p.y*221.-uWave*.72));
             p.y+=band*.00027*sin(p.x*45.+uWave*.38);
             totalEmissiveRadiance*=texture2D(emissiveMap,p).rgb;
+            // Raccord avec le survol, vu de la clairiere (camera z <= 10 ; inchange au bord du lac, z >= 34) :
+            // eau claire qui prend le ciel lavande, reflet des massifs garde en valeur, rive fondue dans la brume.
+            float lakeAway=1.-smoothstep(10.,34.,cameraPosition.z);
+            if(lakeAway>0.){
+              float lakeLum=dot(totalEmissiveRadiance,vec3(.2126,.7152,.0722));
+              vec3 lakeClear=mix(vec3(.150,.138,.178),vec3(.300,.268,.318),smoothstep(.015,.26,lakeLum));
+              float lakeReach=length(vWaterWorld.xz-cameraPosition.xz);
+              // De la terrasse centrale : l'eau lointaine rejoint la teinte « lac » (lavande-gris) au lieu de la
+              // brume laiteuse ; la brume reste sur la rive (liseré de la plaque des massifs).
+              float lakeCalm=${R.clairiere};
+              lakeClear=mix(lakeClear,mix(vec3(.62,.52,.52),${R.lac},lakeCalm),
+                mix(.72*smoothstep(20.,64.,lakeReach),${glsl(R.lacFondu)}*smoothstep(18.,42.,lakeReach),lakeCalm));
+              totalEmissiveRadiance=mix(totalEmissiveRadiance,lakeClear,.86*lakeAway);
+            }
           `);
         };
       }

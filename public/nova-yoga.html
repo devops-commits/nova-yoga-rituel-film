@@ -268,6 +268,88 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
 .mention{margin-top:30px;padding-top:22px;border-top:1px solid rgba(255,253,251,.08)}
 .mention p{margin:0;font-size:12px;line-height:1.8;letter-spacing:.06em;color:rgba(255,253,251,.5)}
 .mention p:first-child{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;letter-spacing:0;color:rgba(255,253,251,.8);margin-bottom:6px}
+.entrees-immersion {
+  max-width: 1120px;
+  margin: 1rem auto 0;
+}
+.entrees-immersion-screen {
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 16 / 9;
+  transition: aspect-ratio .5s ease;
+}
+/* Pas de fond sombre : l'image d'arrivée du survol couvre l'iframe tant que la scène n'a rien dessiné. */
+.entrees-immersion-screen.is-exploring {
+  overflow: hidden;
+  border-radius: var(--r);
+}
+.entrees-immersion-screen video,
+.entrees-immersion-screen img,
+.entrees-immersion-screen iframe {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.entrees-immersion-screen iframe {
+  z-index: 1;
+  opacity: 0;
+  transition: opacity .85s ease;
+}
+.entrees-immersion-screen.is-exploring iframe { opacity: 1; }
+/* Même cadrage que la scène : hauteur pleine, recadrage latéral (le champ vertical du jeu est fixe). */
+.entrees-immersion-screen img {
+  z-index: 2;
+  transition: opacity .85s ease;
+}
+.entrees-immersion-screen.is-exploring img,
+.entrees-immersion-screen.is-exploring video { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .entrees-immersion-screen,
+  .entrees-immersion-screen iframe,
+  .entrees-immersion-screen img { transition: none; }
+}
+.entrees-immersion-screen video,
+.entrees-immersion-screen img {
+  object-fit: cover;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, transparent, #000 19%, #000 78%, transparent),
+              linear-gradient(to right, transparent, #000 13%, #000 87%, transparent);
+  mask-composite: intersect;
+}
+.entrees-immersion-screen [hidden] { display: none; }
+.entrees-immersion-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .5rem 1rem;
+  padding: .5rem 0;
+}
+.entrees-immersion-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--creme);
+  text-underline-offset: .24em;
+}
+@media (max-width: 700px) {
+  .entrees-immersion-screen.is-exploring { aspect-ratio: 4 / 5; }
+}
+.entrees-immersion:has(.awaits-explorer) { position: relative; }
+.entrees-immersion:has(.awaits-explorer) .entrees-immersion-actions {
+  position: absolute;
+  inset: auto 0 12%;
+  justify-content: center;
+}
+.entrees-immersion:has(.awaits-explorer) .entrees-immersion-actions a {
+  border: 1px solid var(--or);
+  border-radius: 2rem;
+  padding: .65rem 1.4rem;
+  background: var(--nuit);
+  text-decoration: none;
+}
 </style>
 </head>
 <body>
@@ -340,6 +422,17 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
         <div class="portes-cue"><strong>Commencez ici</strong><span>Choisissez une Entrée</span><i class="portes-cue-mark" aria-hidden="true"></i></div>
         <h2>Laquelle vous ressemble le plus aujourd’hui&nbsp;?</h2>
         <p>Une Entrée ne vous définit pas. Elle ouvre seulement un premier espace de reconnaissance. Vous pouvez en ouvrir plusieurs, revenir en arrière ou ne rien choisir.</p>
+      </div>
+    </div>
+    <div class="entrees-immersion" aria-label="Sous la peau, film et exploration">
+      <div class="entrees-immersion-screen" id="entrees-screen">
+        <video id="entrees-film" playsinline muted preload="none"
+          poster="images/sous-la-peau/lac.webp" src="videos/sous-la-peau-web.mp4"
+          aria-hidden="true" disablepictureinpicture disableremoteplayback></video>
+        <img id="entrees-raccord" alt="" aria-hidden="true" decoding="async" hidden>
+      </div>
+      <div class="entrees-immersion-actions">
+        <a id="entrees-explore" href="nova-yoga-3d.html?film=vu#clairiere">Passer à l’exploration 3D</a>
       </div>
     </div>
     <div class="portes-stage">
@@ -651,5 +744,6 @@ footer{padding:60px 0 44px;border-top:1px solid rgba(221,177,104,.12);background
   }
 })();
 </script>
+<script type="module" src="experience/exploration/section-intro.js?v=plateforme-libre"></script>
 </body>
 </html>
