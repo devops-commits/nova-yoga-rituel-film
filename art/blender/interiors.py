@@ -2,6 +2,7 @@
 from math import sin,cos,pi,tau,exp
 from random import Random
 from canopies import gallery
+from raccord_geometrie import cypres_monde3,rangees_cypres,lanterne_monde3,tiges_lanterne
 
 VOILES_DE_FOND_4=True
 
@@ -29,10 +30,20 @@ def enclosure(g,n):
             a=-.42+(pi+.84)*j/28;r=7.9+rng.uniform(-.65,.45)
             x,y=r*cos(a),r*sin(a)
             h=rng.uniform(2.8,6.6)
-            g.rock('Orgue basaltique',(x,y,h*.38),(.8+rng.random()*.6,1.2,h*.65),'ink',j+40)
+            g.rock('Orgue basaltique',(x,y,h*.38),(.8+rng.random()*.6,1.2,h*.65),'orgue',j+40)
             if j%2==0:
                 g.tube('Suture de feu',[(x*.86+.064*sin(i),y*.86,.16+i*h/19) for i in range(15)],.022,'gold')
         g.rock('Foyer de schiste',(0,2,.13),(1.2,.90,.36),'ink',14)
+        # Raccord : de la clairière, la cible lit ce cirque comme une rangée de cyprès et la relique comme une
+        # lanterne dans sa cage de tiges (cotes : raccord_geometrie.py). 'orgue' (= 'ink', salle) et 'cypres',
+        # 'lanterne', 'jonc' (lointain) sont fondus l'un dans l'autre par le jeu selon la distance caméra → salle
+        # (atmosphere.js, FONDU_MONDE3). Le lointain est hors collisions et hors ombres au sol (build.navigation).
+        for j,(x,y,h,r) in enumerate(cypres_monde3()):
+            g.surface('Cyprès du lointain',rangees_cypres(x,y,h,r,j),'cypres')
+        globe=lanterne_monde3()
+        g.ell('Lanterne du lointain',globe['centre'],(globe['rayon'],)*3,'lanterne')
+        for points in tiges_lanterne():
+            g.tube('Tige de la lanterne',points,.024,'jonc')
     if n==4:
         # Fond de la salle : trois grands voiles opaques, dont l'écran film0 (géométrie et matières d'origine).
         # Raccord : depuis la clairière la cible ne montre que le voile tendu de gardens.world4 devant les

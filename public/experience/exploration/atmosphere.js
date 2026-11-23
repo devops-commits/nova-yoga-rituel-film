@@ -57,7 +57,12 @@ function terraceStone(mat){
         float line=max(nvJoint(abs(r-1.9),.005),nvJoint(abs(r-6.35),.005));
         float heart=nvJoint(abs(fract(a/.7853982)-.5)*.7853982*r,.004)*step(1.9,r)*step(r,6.35);
         float crown=nvJoint(abs(fract(a/.3926991)-.5)*.3926991*r,.004)*step(6.35,r);
-        return max(line,max(heart,crown))*step(r,10.86);
+        // Chaussees des passages et chemin d'arrivee (une seule nappe par chaussee dans le GLB) : joints fins en
+        // travers, un tous les 2,82 m a partir de la rive de la terrasse (10,78 m), le long des axes a 45 degres.
+        float pa=(fract(a/.7853982+.5)-.5)*.7853982,pd=r*cos(pa),pl=abs(r*sin(pa));
+        float arrivee=step(0.,p.y)*step(abs(p.x),3.2);
+        float seuil=nvJoint(abs(fract((pd-10.78)/2.82+.5)-.5)*2.82,.003)*step(11.5,pd)*step(pd,mix(23.6,44.6,arrivee))*step(pl,mix(2.44,2.80,arrivee));
+        return max(max(line,max(heart,crown))*step(r,10.86),seuil);
       }
       `+shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
         float nvBig=nvStone(vGround.xz);
@@ -139,6 +144,27 @@ function fondMonde4(obj){
   return false;
 }
 
+// Monde 3 (sentier des lueurs, passage de gauche a −45 degres) : la cible montre sous l'arche sombre une rangee de
+// cypres et une lanterne ronde dans sa cage de tiges, la ou la salle porte ses orgues basaltiques et sa relique.
+// Meme principe que FONDU_MONDE4, dans les deux sens et avec la meme trame : de loin le « lointain » (matieres
+// 'cypres', 'lanterne', 'jonc'), de pres la salle (matiere 'orgue', reservee aux orgues). Les deux tests sont
+// complementaires : chaque pixel recoit l'un ou l'autre, jamais un trou, sans transparence ni tri.
+// Centre de la salle : 33 m sur l'axe a −45 degres. Sur l'axe : lointain seul jusqu'a 14 m, salle seule des 24 m.
+export const FONDU_MONDE3={centre:[-23.33,-23.33],plein:9,nul:19};
+const LOINTAIN_3=['cypres','lanterne','jonc'],SALLE_3=['orgue'];
+function fonduMonde3(mat,lointain){
+  const previous=mat.onBeforeCompile,previousKey=mat.customProgramCacheKey();
+  mat.onBeforeCompile=function(shader,renderer){
+    previous.call(this,shader,renderer);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
+      float fond3=1.-smoothstep(${glsl(FONDU_MONDE3.plein)},${glsl(FONDU_MONDE3.nul)},distance(cameraPosition.xz,vec2(${glsl(FONDU_MONDE3.centre[0])},${glsl(FONDU_MONDE3.centre[1])})));
+      float trame3=fract(52.9829189*fract(dot(floor(gl_FragCoord.xy),vec2(.06711056,.00583715))));
+      ${lointain?'if(fond3>trame3)discard;':'if(fond3<.999&&fond3<=trame3)discard;'}`);
+  };
+  mat.customProgramCacheKey=()=>previousKey+(lointain?'-loin3':'-salle3');
+  mat.needsUpdate=true;
+}
+
 export function movingFilm(root) {
   const video=document.createElement('video');
   Object.assign(video,{muted:true,loop:true,playsInline:true,preload:'auto'});
@@ -150,7 +176,7 @@ export function movingFilm(root) {
   const texture=new THREE.VideoTexture(video);texture.colorSpace=THREE.SRGBColorSpace;texture.flipY=false;
   let active=false;
   const groundShadow=new THREE.TextureLoader().load('worlds/ombres-sol.png');
-  const films=new Set(),fonds4=new Set();
+  const films=new Set(),fonds4=new Set(),fonds3=new Set();
   const lakeTime={value:0};
   if(skyMaterial)skyMaterial.uniforms.uRaccord.value=1;
   root.traverse(obj=>{
@@ -159,7 +185,7 @@ export function movingFilm(root) {
     // Matériau propre aux voiles de fond et à la relique du monde 4 : 'silk' et 'film0' servent ailleurs.
     if(fondMonde4(obj)){obj.material=obj.material.clone();fonds4.add(obj.material);}
     for (const mat of [].concat(obj.material)){
-      if(['chalk','basalt','clay','rose','brass','brass4','copper','jade','ink','silk','ash'].includes(mat.name)){
+      if(['chalk','basalt','clay','rose','brass','brass4','copper','jade','ink','orgue','silk','ash'].includes(mat.name)){
         mat.onBeforeCompile=shader=>{
           shader.uniforms.uGroundShade={value:groundShadow};
           shader.vertexShader='varying vec3 vGround;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n vGround=(modelMatrix*vec4(transformed,1.)).xyz;');
@@ -191,6 +217,16 @@ export function movingFilm(root) {
         // renforcé ici, et un fond chaud qui tient lieu de ciel rosé sur la face à l'ombre.
         mat.roughness=.86;mat.envMapIntensity=1.2;mat.emissive.setRGB(.022,.008,.005);mat.emissiveIntensity=1;
       }
+      if(mat.name==='lanterne'){
+        // Globe chaud de la lanterne (cible 244,221,182) : il porte la lueur du sentier, sans ombre ni reflet.
+        mat.color.setRGB(.30,.24,.16);mat.emissive.setRGB(2.1,1.30,.66);mat.emissiveIntensity=1;mat.emissiveMap=null;
+        mat.metalness=0;mat.roughness=1;mat.envMapIntensity=.2;
+      }
+      if(LOINTAIN_3.includes(mat.name)){
+        obj.castShadow=false;
+        if(!fonds3.has(mat)){fonds3.add(mat);fonduMonde3(mat,true);}
+      }
+      if(SALLE_3.includes(mat.name)&&!fonds3.has(mat)){fonds3.add(mat);fonduMonde3(mat,false);}
       if(mat.name==='film2'){mat.metalness=.48;mat.roughness=.115;mat.envMapIntensity=1.65;}
       if(mat.name==='water'){
         mat.onBeforeCompile=shader=>{

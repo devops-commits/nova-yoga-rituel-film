@@ -71,6 +71,9 @@ def materials():
     palette.update(brass4=('f0c890',.61,.30))
     # Voile tendu du monde 4 (raccord) : blanc à peine chaud, non métallique, translucide (alpha plus bas).
     palette.update(veil=('faf0e4',0,.80))
+    # Monde 3 vu de la clairière (raccord) : 'orgue' = 'ink' à l'identique, réservé aux orgues basaltiques pour
+    # que le jeu puisse les fondre ; cyprès vert sombre mat, globe chaud de la lanterne, tiges dorées.
+    palette.update(orgue=palette['ink'],cypres=('4b5338',0,.92),lanterne=('ffe2b0',0,.55),jonc=('d8c49a',.25,.50))
     def load_photo(name,normal=False):
         image=bpy.data.images.load(str(HERE/'surfaces'/name),check_existing=True)
         if normal:image.colorspace_settings.name='Non-Color'
@@ -107,6 +110,8 @@ def materials():
             link(channels.outputs['Blue'],shader.inputs['Metallic'])
         if key=='gold':
             shader.inputs['Emission Color'].default_value=color;shader.inputs['Emission Strength'].default_value=.85
+        if key in ('lanterne','jonc'):
+            shader.inputs['Emission Color'].default_value=color;shader.inputs['Emission Strength'].default_value=1.0 if key=='lanterne' else .45
         if key=='waterdrop':
             shader.inputs['IOR'].default_value=1.333
             shader.inputs['Transmission Weight'].default_value=.96
@@ -165,11 +170,15 @@ def relic(materials,n):
             g.tube('Fil à relier',[(-.68+j*.055,.10*math.sin(j*.5+i),.76+.145*i+.16*math.sin(j*.22+i*.4)) for j in range(26)],.024,'gold')
     return g
 
+SANS_COLLISION={'cypres','lanterne','jonc'}
+
 def navigation():
     bpy.context.view_layer.update()
     verts=[];faces=[]
     for obj in bpy.context.scene.objects:
         if obj.type!='MESH': continue
+        # Lointain du monde 3 : fondu de près par le jeu, donc ni collision ni ombre au sol.
+        if obj.data.materials and obj.data.materials[0] and obj.data.materials[0].name in SANS_COLLISION: continue
         corners=[obj.matrix_world@Vector(p) for p in obj.bound_box]
         if max(p.z for p in corners)<.33 or min(p.z for p in corners)>2.08: continue
         off=len(verts);verts.extend(obj.matrix_world@v.co for v in obj.data.vertices)

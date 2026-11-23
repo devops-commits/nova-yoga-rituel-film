@@ -1,7 +1,7 @@
 """Continuous lake, eight-shot causeway, clearing and seven radial passages."""
 import math
 from sculpt import Set, TAU
-from raccord_geometrie import ARC, ARC_CENTRE, arc
+from raccord_geometrie import ARC, ARC_CENTRE, arc, chaussee, largeur_arrivee, RIVE_SOCLE
 
 ANGLES = [-135,-90,-45,0,45,90,135]
 PALETTE = ['clay','brass','ink','chalk','rose','jade','brass']
@@ -48,9 +48,10 @@ def landscape(materials):
     lake(g)
     deck=Set('02 • Le chemin des huit plans',materials)
     # Basalt promontory before the first shot. The first view opens over the lake.
-    for i in range(12,51):
-        y=-55.5+i*.92
-        deck.box('Dalle de travertin',(0,y,-.17),(5.9+.23*math.sin(i/3),.90,.34),'chalk')
+    # Raccord : une seule nappe au ras de la terrasse (même emprise que les 39 dalles, y de −44,91 à la
+    # terrasse), tournée d'un demi-tour pour garder la face vers le haut.
+    rows,uvs=chaussee(44.91,largeur_arrivee)
+    deck.surface('Dalle de travertin',[[(-x,-s,z) for x,s,z in row] for row in rows],'chalk',uvs)
     # Side promontories let the visitor circle each film projection and return to the path.
     for i,(y,side) in enumerate(zip(range(-48,-12,5),[-1,-1,1,-1,1,-1,1,-1])):
         rows=[]
@@ -71,8 +72,10 @@ def landscape(materials):
 def passage(materials,n):
     a=math.radians(ANGLES[n-1])
     g=Set(f'Passage {n:02}',materials,a)
-    for i in range(17):
-        g.box('Dalle de seuil',(0,10+i*.94,-.17),(5.0,.92,.34),'chalk')
+    # Raccord : seuil continu avec la terrasse (cible : sol lisse, sans marche ni dalles bombées). Même emprise
+    # que les 17 dalles (largeur 5 m, jusqu'à y = 25,51), dessus à z = 0, 4 mm au-dessus du socle du monde.
+    rows,uvs=chaussee(25.51,seuil=RIVE_SOCLE)
+    g.surface('Dalle de seuil',rows,'chalk',uvs)
     for x in [-2.17,2.17]:
         g.tube('Ligne de passage',[(x,10,.025),(x,26,.025)],.026,'brass')
     # Raccord : l'arche centrale (n = 4, face à la caméra de départ) est plus haute et plus ouverte dans la
