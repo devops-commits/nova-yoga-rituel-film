@@ -4,3 +4,38 @@
 
 
 #macro[aria-pressed=true]{background:#f7e9ce;color:#293531}nav button:disabled{opacity:.55}
+
+#film-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: #151c20;
+  color: #fff8eb;
+}
+#film-intro video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+.film-intro-actions {
+  position: absolute;
+  inset: auto max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.film-intro-actions p {
+  margin: 0;
+  text-shadow: 0 1px 5px #151c20;
+}
+.film-intro-actions p:empty { display: none; }
+.film-intro-actions button {
+  padding: 10px 17px;
+  min-height: 44px;
+  border: 1px solid #fff8eb80;
+  border-radius: 24px;
+  background: #17242cee;
+}

@@ -25,6 +25,7 @@ from bowl import vessel
 from approach import approach
 from chambers import world1, world2, world3
 from gardens import world4, world5, world6, world7
+import pbr
 
 PUBLIC=HERE.parents[1]/'public'
 OUT=PUBLIC/'worlds'
@@ -57,8 +58,14 @@ def grain():
 
 def materials():
     tex,bump=grain()
-    palette={'chalk':('ceb99e',.03,.78),'basalt':('525d62',.15,.70),'clay':('ba826e',.05,.59),'brass':('c79a65',.61,.34),'gold':('ffd18b',.38,.32),'silk':('e4cfc3',.12,.42),'jade':('73968e',.28,.46),'water':('739b9f',.35,.26),'ink':('444451',.17,.68),'rose':('c78e91',.06,.68)}
+    palette={'chalk':('d4b3af',.03,.78),'basalt':('525d62',.15,.70),'clay':('ba826e',.05,.59),'brass':('c79a65',.61,.34),'gold':('ffd18b',.38,.32),'silk':('e4cfc3',.12,.42),'jade':('73968e',.28,.46),'water':('739b9f',.35,.26),'ink':('444451',.17,.68),'rose':('c78e91',.06,.68)}
     palette.update(skin=('b18973',.02,.54),bronze=('a78355',.78,.39),waterdrop=('f8faf9',0,.045))
+    # Croûte de cendre du sentier des lueurs : la carte de couleur porte cendre, charbon et fentes.
+    palette.update(ash=('d6d0c8',0,.9))
+    # Raccord avec la dernière image du survol Flow (plateforme-libre.jpg) : la pierre 'chalk' passe du beige jaune
+    # ceb99e au gris-beige rosé d4b3af (rapport linéaire ×1,07 / ×0,93 / ×1,25 mesuré sol centre + milieu + bas),
+    # et l'arche de droite reçoit un cuivre rosé métallique (carte ORM du laiton).
+    palette.update(copper=('cf9079',.72,.36))
     def load_photo(name,normal=False):
         image=bpy.data.images.load(str(HERE/'surfaces'/name),check_existing=True)
         if normal:image.colorspace_settings.name='Non-Color'
@@ -98,6 +105,8 @@ def materials():
         if key=='waterdrop':
             shader.inputs['IOR'].default_value=1.333
             shader.inputs['Transmission Weight'].default_value=.96
+        # Matières du cahier (couleur, rugosité, métal, normales) : surfaces/jeu/, voir matieres.py.
+        pbr.appliquer(mat,key)
         result[key]=mat
     for i in range(8):
         mat=bpy.data.materials.new('film'+str(i));mat.use_nodes=True

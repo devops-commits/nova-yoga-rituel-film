@@ -4,6 +4,14 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="experience/exploration/walk.css">
 <script type="importmap">{"imports":{"three":"./vendor/three/three.module.js"}}</script></head>
 <body>
+<section id="film-intro" aria-label="Film Sous la peau" hidden>
+<video playsinline muted preload="none" aria-label="Sous la peau, le film"></video>
+<div class="film-intro-actions">
+<p id="film-intro-status" role="status"></p>
+<button id="film-intro-play" type="button" hidden>Lancer le film</button>
+<button id="film-intro-skip" type="button">Passer le film</button>
+</div>
+</section>
 <main id="expedition" aria-label="Sous la peau, exploration en trois dimensions">
 <canvas id="view" tabindex="0" aria-label="Monde 3D. Flèches pour avancer, reculer et tourner. Glissez pour regarder."></canvas>
 <header><a href="nova-yoga.html" class="brand" aria-label="Nova Yoga, accueil"><img src="images/nova-yoga-logo.svg" alt="Nova Yoga"></a>
