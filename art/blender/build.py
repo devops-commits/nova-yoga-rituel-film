@@ -66,6 +66,11 @@ def materials():
     # ceb99e au gris-beige rosé d4b3af (rapport linéaire ×1,07 / ×0,93 / ×1,25 mesuré sol centre + milieu + bas),
     # et l'arche de droite reçoit un cuivre rosé métallique (carte ORM du laiton).
     palette.update(copper=('cf9079',.72,.36))
+    # Arche centrale seule : laiton doré clair et satiné (cible 136,116,108 ; 'brass' c79a65 y donnait 90,73,58).
+    # Même carte ORM que le laiton ; le reflet du ciel est réglé dans atmosphere.js par le nom 'brass4'.
+    palette.update(brass4=('f0c890',.61,.30))
+    # Voile tendu du monde 4 (raccord) : blanc à peine chaud, non métallique, translucide (alpha plus bas).
+    palette.update(veil=('faf0e4',0,.80))
     def load_photo(name,normal=False):
         image=bpy.data.images.load(str(HERE/'surfaces'/name),check_existing=True)
         if normal:image.colorspace_settings.name='Non-Color'
@@ -105,6 +110,13 @@ def materials():
         if key=='waterdrop':
             shader.inputs['IOR'].default_value=1.333
             shader.inputs['Transmission Weight'].default_value=.96
+        if key=='veil':
+            # Tissu fin lu en transparence, double face : glTF alphaMode BLEND, doubleSided. Le jeu refixe
+            # opacité et profondeur par le nom du matériau (atmosphere.js), l'export ne décide donc pas seul.
+            shader.inputs['Alpha'].default_value=.56
+            mat.use_backface_culling=False
+            if hasattr(mat,'surface_render_method'):mat.surface_render_method='BLENDED'
+            elif hasattr(mat,'blend_method'):mat.blend_method='BLEND'
         # Matières du cahier (couleur, rugosité, métal, normales) : surfaces/jeu/, voir matieres.py.
         pbr.appliquer(mat,key)
         result[key]=mat
@@ -262,6 +274,9 @@ def main():
     old=struct.unpack_from('<I',raw,12)[0];doc=json.loads(raw[20:20+old])
     for material in doc['materials']:
         if material['name'] in colors:material['pbrMetallicRoughness']['baseColorFactor']=colors[material['name']]
+        if material['name']=='veil':
+            # Voile translucide double face, quel que soit le choix de l'exporteur.
+            material['pbrMetallicRoughness']['baseColorFactor'][3]=.56;material['alphaMode']='BLEND';material['doubleSided']=True
     encoded=json.dumps(doc,separators=(',',':')).encode();encoded+=b' '*(-len(encoded)%4)
     body=struct.pack('<I',len(encoded))+b'JSON'+encoded+raw[old+20:]
     path.write_bytes(raw[:8]+struct.pack('<I',12+len(body))+body)

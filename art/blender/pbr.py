@@ -17,11 +17,15 @@ BRANCHEMENTS = {
     'chalk':  dict(famille='calcaire', couleur=True, echelle=(3, 3), relief=.55),
     'brass':  dict(famille='laiton', echelle=(1, 12), relief=.30),
     'copper': dict(famille='laiton', echelle=(1, 12), relief=.30),
+    'brass4': dict(famille='laiton', echelle=(1, 12), relief=.22),
     'basalt': dict(famille='basalte', echelle=(2, 2), relief=.60),
     'gold':   dict(famille='fil', echelle=(1, 10), relief=.50),
     'ash':    dict(famille='cendre', couleur=True, echelle=(3, 1.5), relief=.70, emission=1.8),
     'rose':   dict(famille='ocre', couleur=True, echelle=(2, 2), relief=.55),
     'water':  dict(famille='eau', echelle=(1.5, 1.5), relief=.35, ior=1.333),
+    # Voile du monde 4 : UV (4·s, t) sur 21 m × 5 m environ, soit un motif de tissage tous les 0,5 m
+    # (carte agrandie cinq fois : à 33 m de la clairière, la tuile réelle de 0,1 m ne donnerait que du moiré).
+    'veil':   dict(famille='voile', couleur=True, echelle=(10, 10), relief=.35),
 }
 
 

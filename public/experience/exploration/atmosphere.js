@@ -108,6 +108,37 @@ export function atmosphere(scene) {
   sky.renderOrder=-10;scene.add(sky);skyMaterial=sky.material;
 }
 
+// Fond de la salle du monde 4 (trois « Grand voile de lin », dont l'écran film0) et relique « Voile du souffle » :
+// présents dans la salle, absents de la vue de la clairière (la cible n'y montre que le voile tendu devant les
+// montagnes). Visibilité = 1 − smoothstep(plein, nul, distance horizontale caméra → centre de la salle), en mètres.
+// Sur l'axe du passage : rien jusqu'à 14 m du centre de la clairière, tout à partir de 24 m.
+export const FONDU_MONDE4={centre:[0,-33],plein:9,nul:19};
+const glsl=n=>Number(n).toFixed(2);
+
+// Fondu sans tri de transparence : les matériaux restent opaques (profondeur écrite, passe opaque), les fragments
+// sont écartés par une trame ordonnée fixe à l'écran, la même que celle du rivage (photographic.js, lakeReveal).
+function fonduMonde4(mat){
+  const previous=mat.onBeforeCompile,previousKey=mat.customProgramCacheKey();
+  mat.onBeforeCompile=function(shader,renderer){
+    previous.call(this,shader,renderer);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>
+      float fond4=1.-smoothstep(${glsl(FONDU_MONDE4.plein)},${glsl(FONDU_MONDE4.nul)},distance(cameraPosition.xz,vec2(${glsl(FONDU_MONDE4.centre[0])},${glsl(FONDU_MONDE4.centre[1])})));
+      if(fond4<.999){
+        float trame4=fract(52.9829189*fract(dot(floor(gl_FragCoord.xy),vec2(.06711056,.00583715))));
+        if(fond4<=trame4)discard;
+      }`);
+  };
+  mat.customProgramCacheKey=()=>previousKey+'-fond4';
+  mat.needsUpdate=true;
+}
+function fondMonde4(obj){
+  const nom=obj.material?.name;
+  if(obj.name==='Relique4')return nom==='silk';
+  if(nom!=='silk'&&nom!=='film0')return false;
+  for(let o=obj;o;o=o.parent)if(/^Monde[ _]?04/.test(o.name))return true;
+  return false;
+}
+
 export function movingFilm(root) {
   const video=document.createElement('video');
   Object.assign(video,{muted:true,loop:true,playsInline:true,preload:'auto'});
@@ -119,14 +150,16 @@ export function movingFilm(root) {
   const texture=new THREE.VideoTexture(video);texture.colorSpace=THREE.SRGBColorSpace;texture.flipY=false;
   let active=false;
   const groundShadow=new THREE.TextureLoader().load('worlds/ombres-sol.png');
-  const films=new Set();
+  const films=new Set(),fonds4=new Set();
   const lakeTime={value:0};
   if(skyMaterial)skyMaterial.uniforms.uRaccord.value=1;
   root.traverse(obj=>{
     if(!obj.isMesh)return;
     obj.receiveShadow=true;obj.castShadow=true;
+    // Matériau propre aux voiles de fond et à la relique du monde 4 : 'silk' et 'film0' servent ailleurs.
+    if(fondMonde4(obj)){obj.material=obj.material.clone();fonds4.add(obj.material);}
     for (const mat of [].concat(obj.material)){
-      if(['chalk','basalt','clay','rose','brass','copper','jade','ink','silk','ash'].includes(mat.name)){
+      if(['chalk','basalt','clay','rose','brass','brass4','copper','jade','ink','silk','ash'].includes(mat.name)){
         mat.onBeforeCompile=shader=>{
           shader.uniforms.uGroundShade={value:groundShadow};
           shader.vertexShader='varying vec3 vGround;\n'+shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\n vGround=(modelMatrix*vec4(transformed,1.)).xyz;');
@@ -152,6 +185,12 @@ export function movingFilm(root) {
             totalEmissiveRadiance=mix(totalEmissiveRadiance,alpesAir,alpesLoin);`);
         };
       }
+      if(mat.name==='brass4'){
+        // Arche centrale seule (raccord) : laiton clair satiné qui prend le ciel. Cible 136,116,108 contre 90,73,58,
+        // soit ×1,95 / ×1,95 / ×2,3 en lumière de scène (ACES inversé) : teinte claire dans le GLB, reflet du ciel
+        // renforcé ici, et un fond chaud qui tient lieu de ciel rosé sur la face à l'ombre.
+        mat.roughness=.86;mat.envMapIntensity=1.2;mat.emissive.setRGB(.022,.008,.005);mat.emissiveIntensity=1;
+      }
       if(mat.name==='film2'){mat.metalness=.48;mat.roughness=.115;mat.envMapIntensity=1.65;}
       if(mat.name==='water'){
         mat.onBeforeCompile=shader=>{
@@ -176,7 +215,29 @@ lakeG += lakeD4 * (0.0035 * 19.0 * lakeC4);
 normal = normalize(normal + 0.65 * (viewMatrix * vec4(vec3(-lakeG.x, 0.0, -lakeG.y), 0.0)).xyz);`);
         };
       }
+      if(mat.name==='veil'){
+        // Voile tendu du monde 4 (raccord avec la fin du survol) : tissu fin, double face, lu en transparence,
+        // sans ombre portée dure. Seul le bord libre respire : uv.y vaut 1 sur la lisière basse, 0 sur la
+        // lisière haute, et uv.x/4 court d'une pointe tenue à l'autre. Mouvement coupé avec lakeTime (réduit).
+        mat.transparent=true;mat.opacity=.62;mat.depthWrite=false;mat.side=THREE.DoubleSide;mat.alphaTest=0;
+        // Blanc lumineux et chaud (cible 174,157,156 contre 144,146,147 : +0,067 / +0,021 / +0,017 en lumière de
+        // scène). La lueur du tissu porte l'essentiel, modulée par l'orientation des plis pour qu'ils restent lus.
+        mat.emissive.setRGB(.27,.195,.185);mat.emissiveIntensity=1;mat.envMapIntensity=.35;
+        obj.castShadow=false;obj.renderOrder=2;
+        mat.onBeforeCompile=shader=>{
+          shader.uniforms.uVeilTime=lakeTime;
+          shader.vertexShader='uniform float uVeilTime;\n'+shader.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
+            float veilFree=uv.y*uv.y*sin(3.14159*clamp(uv.x*.25,0.,1.));
+            transformed+=normal*(veilFree*.12*sin(uVeilTime*.8+uv.x*4.7));`);
+          // Plis : la lueur suit la face tournée vers le ciel du couchant (moyenne ≈ 1, creux ×0,62, crêtes ×1,45).
+          shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+            float veilPli=abs(dot(inverseTransformDirection(normal,viewMatrix),vec3(.35,.80,.49)));
+            totalEmissiveRadiance*=mix(.62,1.45,smoothstep(.05,.85,veilPli));`);
+        };
+        mat.customProgramCacheKey=()=>'veil';
+      }
       if(/^film[0-7]$/.test(mat.name))films.add(mat);
+      if(fonds4.has(mat))fonduMonde4(mat);
     }
   });
   function apply(){
@@ -192,6 +253,7 @@ normal = normalize(normal + 0.65 * (viewMatrix * vec4(vec3(-lakeG.x, 0.0, -lakeG
       };
       mat.customProgramCacheKey=()=>mat.name;
       lakeReveal(mat);
+      if(fonds4.has(mat))fonduMonde4(mat);
       mat.needsUpdate=true;
     }
   }

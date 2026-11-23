@@ -1,32 +1,18 @@
 import math
 import random
 
+from raccord_geometrie import voile, ourlets
+
 def world4(g):
     rng = random.Random(41)
     g.ell("water_opening", (0, 1.4, 0.035), (3.1, 3.8, 0.035), "water")
-    for i in range(6):
-        x = -3.8 + i * 1.52
-        z = 4.5 + 0.38 * math.sin(i * 0.9)
-        rows = []
-        for r in range(7):
-            row = []
-            for c in range(9):
-                u = c / 8
-                v = r / 6
-                y = -0.8 + i * 0.72 + 1.25 * math.sin(u * math.pi * 0.9)
-                row.append((x + (u - 0.5) * 1.05,
-                            y + 0.24 * math.sin(v * math.pi),
-                            z + 0.5 * v + 0.16 * math.sin(u * math.pi * 2)))
-            rows.append(row)
-        mat = "film0" if i == 2 else "chalk"
-        g.surface("breathing_sail_%02d" % i, rows, mat)
-        spar = []
-        for k in range(13):
-            u = k / 12
-            spar.append((x + (u - 0.5) * 1.12,
-                         -0.82 + i * 0.72 + 1.25 * math.sin(u * math.pi * 0.9),
-                         z - 0.04 + 0.13 * math.sin(u * math.pi * 2)))
-        g.tube("fluted_spar_%02d" % i, spar, 0.035, "basalt")
+    # Raccord avec la dernière image du survol : un seul voile blanc, fin et translucide, tendu de pointe à
+    # pointe à travers l'arche centrale (il remplace les six voiles opaques et leurs espars). Nappe double
+    # face, ondulée, sans support ; l'ourlet est une deuxième épaisseur du même tissu, pas un bord dur.
+    rows, uvs = voile()
+    g.surface("Voile de l'horizon", rows, "veil", uvs)
+    for nom, rows, uvs in ourlets():
+        g.surface("Ourlet du voile " + nom, rows, "veil", uvs)
     for i in range(20):
         a = rng.uniform(0, math.tau)
         r = rng.uniform(6.4, 8.5)
