@@ -48,3 +48,86 @@ body.cinema{background:#173a31}
 .cinema.motion-off *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 @media(max-width:600px){.cinema-orbit{width:115vw;top:69%}.cinema-controls{right:10px;bottom:10px}.cinema-controls button,.cinema-controls a{font-size:11px;padding:10px 12px}.cinema .jade-photo{transform:none}.cinema .open{min-height:580px}}
 @media(prefers-reduced-motion:reduce){.cinema .open-in,.cinema .jade-photo,.cinema .open-media{transform:none}.cinema *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* ============ LOT 1 · SCÈNE 3D THREE.JS (AMÉLIORATION PROGRESSIVE) ============ */
+.stage-3d [hidden]{display:none!important}
+.bar .in-bar{gap:16px}
+.bar .nav{gap:14px;flex-wrap:wrap;justify-content:flex-end}
+.bar .nav a{font-size:11px;white-space:nowrap}
+.stage-3d-wrap{display:none;position:relative;min-height:150svh;margin-top:16px}
+body.webgl-active .stage-3d-wrap{display:block}
+body.webgl-active .portes-stage,body.webgl-active #porteReveal{display:none}
+.stage-3d{position:sticky;top:0;height:100svh;min-height:560px;overflow:hidden;border-radius:6px;background:radial-gradient(ellipse at 50% 60%,#234c41 0%,#173a31 65%,#0f2922 100%)}
+#stageCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+.stage-veil{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 50%,var(--veil-tint,#f3e9dc) 0%,#173a31 85%);transition:opacity .12s linear;z-index:4}
+.stage-tools{position:absolute;top:84px;right:18px;z-index:12;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:44%}
+.stage-pill{font:500 12px 'Mulish',sans-serif;padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid #ddb16866;background:#173a31cc;color:#f7efe5;backdrop-filter:blur(8px);cursor:pointer;transition:background .25s,border-color .25s}
+.stage-pill:hover,.stage-pill:focus-visible{background:#24483e;border-color:#ddb168;outline:2px solid #ddb168;outline-offset:3px}
+.stage-pill[aria-pressed=true]{background:#ddb168;color:#173a31;border-color:#ddb168}
+.orbit-hud{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);z-index:10;width:min(92%,640px);text-align:center;padding:18px 22px;border-radius:8px;background:linear-gradient(180deg,#173a31cc,#102b24e8);border:1px solid #ddb16844;backdrop-filter:blur(10px);color:#f7efe5}
+.orbit-hud .hud-num{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#ddb168;margin-bottom:4px}
+.orbit-hud .hud-name{font-family:'Cormorant Garamond',serif;font-size:clamp(24px,3.2vw,34px);font-weight:400;margin:0 0 6px;color:#fff5dc}
+.orbit-hud .hud-q{font-size:14px;line-height:1.5;color:#dfe3d5;margin:0 0 14px}
+.orbit-actions{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+.hud-enter{font:600 13px 'Mulish',sans-serif;padding:12px 22px;min-height:44px;border-radius:999px;border:1px solid #ddb168;background:#ddb168;color:#173a31;cursor:pointer;transition:transform .25s var(--cinema-ease),background .25s}
+.hud-enter:hover,.hud-enter:focus-visible{background:#fff5dc;transform:translateY(-1px);outline:2px solid #fff5dc;outline-offset:3px}
+.hud-step{width:44px;height:44px;border-radius:50%;border:1px solid #ddb16866;background:#173a31cc;color:#f7efe5;font-size:16px;cursor:pointer}
+.hud-step:hover,.hud-step:focus-visible{border-color:#ddb168;background:#24483e;outline:2px solid #ddb168;outline-offset:3px}
+.world-hud{position:absolute;inset:0;pointer-events:none;z-index:11;display:flex;flex-direction:column;justify-content:space-between;padding:84px 18px 18px}
+.world-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;pointer-events:auto;max-width:52%}
+.world-title{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,2.2vw,26px);color:#fff5dc;margin:0;text-shadow:0 2px 14px #0b1f1a}
+.world-demo-banner{font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:6px 10px;border-radius:4px;background:#173a31d9;border:1px solid #ddb16866;color:#ddb168}
+.world-bottom{display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:auto}
+.world-frag-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:960px}
+.world-frag-btn{font:500 12px 'Mulish',sans-serif;padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid #f7efe555;background:#173a31d9;color:#f7efe5;cursor:pointer;backdrop-filter:blur(6px);transition:background .25s,border-color .25s}
+.world-frag-btn:hover,.world-frag-btn:focus-visible{background:#f7efe5;color:#173a31;border-color:#ddb168;outline:2px solid #ddb168;outline-offset:3px}
+.world-frag-panel{position:absolute;right:20px;top:144px;bottom:118px;width:min(420px,calc(100% - 40px));z-index:14;overflow:auto;padding:24px;border-radius:8px;background:#f7efe5f5;color:#293b34;box-shadow:0 30px 60px -20px #061b16;pointer-events:auto}
+.world-frag-panel h3{font-family:'Cormorant Garamond',serif;font-size:26px;margin:6px 0 12px;color:#173a31}
+.world-frag-panel .frag-dir{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#755631}
+.world-frag-panel img{display:block;max-width:100%;max-height:300px;width:auto;height:auto;margin:0 auto 14px;border-radius:4px;object-fit:contain}
+.world-frag-panel p{font-size:14px;line-height:1.7;margin:0 0 16px}
+.frag-panel-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.frag-panel-actions a,.frag-panel-actions button{font:600 12px 'Mulish',sans-serif;padding:10px 16px;min-height:44px;border-radius:999px;border:1px solid #173a31;background:#173a31;color:#f7efe5;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center}
+.frag-panel-actions button{background:transparent;color:#173a31}
+.world-fallback-box{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:13;width:min(92%,640px);max-height:78%;overflow:auto;padding:22px;border-radius:8px;background:#f7efe5;color:#293b34;box-shadow:0 30px 60px -20px #061b16}
+.world-fallback-box .fragment-choice{display:block;padding:12px 14px;margin-bottom:8px;border-radius:6px;text-decoration:none}
+.world-fallback-box .fragment-choice strong{display:block;font-size:12px;letter-spacing:.12em;color:#755631;margin-bottom:4px}
+.breath-cue{position:absolute;left:50%;top:22%;transform:translateX(-50%);z-index:15;padding:12px 22px;border-radius:999px;background:#173a31e6;border:1px solid #ddb168;color:#fff5dc;font-family:'Cormorant Garamond',serif;font-size:20px;pointer-events:none;transition:transform 4s ease-in-out}
+.breath-cue.in{transform:translateX(-50%) scale(1.08)}
+.breath-cue.out{transform:translateX(-50%) scale(.96)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.direct-access-sec{background:#122e27;padding:48px 0;border-top:1px solid #ddb16826}
+.direct-access-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px}
+.direct-card{padding:20px;border:1px solid #ddb16833;border-radius:6px;background:#173a31}
+.direct-card h3{font-family:'Cormorant Garamond',serif;font-size:22px;margin:0 0 8px;color:#fff5dc}
+.direct-card p{font-size:13px;line-height:1.6;color:#dfe3d5;margin:0}
+@media(max-width:1100px){.stage-tools{top:116px}.world-hud{padding-top:116px}.world-frag-panel{top:172px}}
+@media(max-width:600px){.world-top{max-width:100%}.stage-tools{top:auto;bottom:10px;right:10px;left:10px;justify-content:center}.orbit-hud{bottom:68px;padding:14px}}
+
+
+/* Le film guide le choix. Le canvas prend le relais à l’arrivée. */
+body.nova-film-guided { overflow-x: clip; }
+body.nova-film-guided .stage-3d-wrap:not(.nova-world-open) { display: none; }
+body.nova-film-guided .stage-3d-wrap.nova-world-open { display: block; min-height: 0; }
+body.nova-film-guided .stage-3d { position: relative; height: min(820px, 90svh); }
+body.nova-film-guided .orbit-hud { display: none; }
+#filmGuide[hidden] { display: none; }
+body.nova-film-guided #stage-3d { scroll-margin-top: 75px; }
+@media (max-width: 600px) {
+  body.nova-film-guided .stage-3d { min-height: 550px; }
+  body.nova-film-guided .world-bottom { padding-bottom: 60px; }
+}
+
+body.nova-film-guided .world-top {
+  align-items: center;
+  max-width: 100%;
+}
+body.nova-film-guided .world-demo-banner { display: none; }
+body.nova-film-guided .world-title { text-shadow: 0 2px 12px #0a0704, 0 1px 4px #0a0704; }
+body.nova-film-guided .world-bottom {
+  background: linear-gradient(0deg, #0d1514e6, transparent);
+  padding: 38px 12px 53px;
+}
+@media (max-width: 600px) {
+  body.nova-film-guided .world-bottom { padding-bottom: 68px; }
+}

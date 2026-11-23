@@ -1,0 +1,403 @@
+/* Scene inclusive et cinematique "Sous la peau" (film reel de 7,92 s).
+   Palette sombre nacree et or, contrastes ELEVE, reperes tactiles de 44 px minimum. */
+
+.fg-root {
+  --fg-drop-size: 48px;   /* cible carree explicite, toujours entre 44 et 52 px */
+  --fg-ink: #f5f0e7;
+  --fg-ink-soft: rgba(245, 240, 231, 0.86);
+  --fg-gold: #e8c78f;
+  --fg-line: rgba(245, 240, 231, 0.28);
+  --fg-panel: rgba(10, 12, 17, 0.88);
+  --fg-ink-dark: #14100a;
+  position: relative;
+  display: block;
+  color: var(--fg-ink);
+  background: #05070a;
+  font-family: inherit;
+}
+
+.fg-root[hidden] { display: none !important; }
+
+.fg-wrap { position: relative; }
+.fg-wrap [hidden] { display: none !important; }
+
+.fg-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- boutons communs ---------- */
+.fg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.7rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--fg-line);
+  background: rgba(12, 15, 21, 0.78);
+  color: var(--fg-ink);
+  font: inherit;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+}
+.fg-btn:hover { border-color: var(--fg-gold); }
+.fg-btn:active { transform: translateY(1px); }
+.fg-btn:focus-visible { outline: 3px solid var(--fg-gold); outline-offset: 3px; }
+.fg-btn[disabled] { opacity: 0.42; cursor: not-allowed; border-color: var(--fg-line); }
+.fg-btn-primary {
+  background: linear-gradient(180deg, #f2d9ac, #d9ae69);
+  color: var(--fg-ink-dark);
+  font-weight: 600;
+  border-color: rgba(20, 16, 10, 0.35);
+}
+.fg-btn-primary:hover { border-color: #fff2d8; }
+
+/* ---------- phase lac ---------- */
+.fg-lac {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #05070a;
+}
+.fg-lac-stage { position: absolute; inset: 0; }
+.fg-lac-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fg-lac-palm { opacity: 0; }
+.fg-film {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.25s linear;
+}
+.fg-lac-ui {
+  position: relative;
+  z-index: 2;
+  width: min(92vw, 46rem);
+  padding: clamp(1.2rem, 4vw, 3rem);
+  text-align: center;
+}
+.fg-title {
+  margin: 0 0 0.6rem;
+  font-size: clamp(2.1rem, 7vw, 4.2rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+}
+.fg-lede {
+  margin: 0 auto;
+  max-width: 34rem;
+  color: var(--fg-ink-soft);
+  font-size: clamp(1rem, 2.4vw, 1.2rem);
+  line-height: 1.55;
+}
+.fg-scrub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.4rem 0;
+}
+.fg-scrub-val {
+  min-width: 10rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.92rem;
+  color: var(--fg-ink-soft);
+}
+
+/* ---------- phase paume ---------- */
+.fg-palm { padding: clamp(1rem, 4vw, 3rem) clamp(0.75rem, 3vw, 2rem); }
+.fg-palm-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(1rem, 3vw, 2.6rem);
+  align-items: center;
+  max-width: 1180px;
+  margin-inline: auto;
+}
+.fg-palm-frame {
+  position: relative;
+  /* Le calque de la paume et le calque des reflets partagent le meme ratio
+     16/9, identique a celui de l'image de fond : les positions en pourcentage
+     tombent donc exactement sur la photographie. */
+  aspect-ratio: 16 / 9;
+  background: #08090c;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  touch-action: pan-y;
+}
+.fg-palm-media {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  border: 1px solid var(--fg-line);
+  background: #08090c;
+}
+.fg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fg-palm-layer {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: 16 / 9;
+}
+.fg-drops { position: absolute; inset: 0; }
+
+.fg-drop {
+  position: absolute;
+  width: var(--fg-drop-size, 48px);
+  height: var(--fg-drop-size, 48px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  /* Aucun bouton n'est tourne : les sept reflets restent de droit. */
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+.fg-drop:focus-visible { outline: 3px solid var(--fg-gold); outline-offset: 2px; border-radius: 50%; }
+/* Petit retrait dans la cible, l'image occupe 100 % de ce retrait. */
+.fg-drop-media {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px rgba(245, 240, 231, 0.7), 0 6px 18px rgba(0, 0, 0, 0.55);
+  transition: box-shadow 0.2s ease;
+}
+.fg-drop-thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fg-drop.is-on .fg-drop-media,
+.fg-drop:hover .fg-drop-media,
+.fg-drop:focus-visible .fg-drop-media {
+  box-shadow: 0 0 0 3px var(--fg-gold), 0 8px 22px rgba(0, 0, 0, 0.6);
+}
+.fg-drop-tip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(9rem, 42vw);
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--fg-line);
+  background: rgba(8, 10, 14, 0.94);
+  color: var(--fg-ink);
+  font-size: 0.78rem;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+/* Niveau haut : l'infobulle se pose sous la cible. Niveau bas : au-dessus. */
+.fg-drop.is-top .fg-drop-tip { top: calc(100% + 8px); }
+.fg-drop:not(.is-top) .fg-drop-tip { bottom: calc(100% + 8px); }
+.fg-drop.is-left .fg-drop-tip { left: 0; transform: none; text-align: left; }
+.fg-drop.is-right .fg-drop-tip { left: auto; right: 0; transform: none; text-align: right; }
+.fg-drop:hover .fg-drop-tip,
+.fg-drop:focus-visible .fg-drop-tip { opacity: 1; }
+
+.fg-panel {
+  padding: clamp(1rem, 2.6vw, 1.9rem);
+  border-radius: 1.25rem;
+  border: 1px solid var(--fg-line);
+  background: var(--fg-panel);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.45);
+}
+.fg-panel-idx {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-gold);
+}
+.fg-panel-title {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.4rem, 3.4vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.2;
+}
+.fg-panel-q {
+  margin: 0 0 0.5rem;
+  color: var(--fg-ink-soft);
+  font-size: 1.04rem;
+  line-height: 1.55;
+}
+.fg-panel-th {
+  margin: 0;
+  color: var(--fg-gold);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.fg-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.3rem;
+}
+
+/* ---------- phase traversee ---------- */
+.fg-cross { position: relative; }
+.fg-cross-track { position: relative; height: 320vh; }
+.fg-cross-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: #05070a;
+}
+.fg-cross-sticky:focus { outline: none; }
+.fg-scenes { position: absolute; inset: 0; }
+.fg-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.fg-scene-img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fg-scene-video-el { object-fit: cover; background: #05070a; }
+.fg-scene-palm { z-index: 1; }
+.fg-scene-depth { z-index: 2; filter: blur(16px) saturate(1.15); }
+.fg-scene-entry { z-index: 3; }
+.fg-scene-detail { z-index: 4; }
+.fg-scene-video { z-index: 7; }
+.fg-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: radial-gradient(120% 95% at 50% 18%, rgba(88, 60, 48, 0.8), rgba(10, 9, 8, 0.96));
+}
+
+.fg-hud {
+  position: absolute;
+  z-index: 8;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: clamp(0.9rem, 3vw, 2rem);
+  background: linear-gradient(to top, rgba(4, 5, 8, 0.94) 35%, rgba(4, 5, 8, 0));
+}
+.fg-hud-brand {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--fg-gold);
+}
+.fg-hud-title {
+  margin: 0;
+  font-size: clamp(1.1rem, 3vw, 1.9rem);
+  font-weight: 500;
+  line-height: 1.25;
+}
+.fg-progress {
+  width: min(100%, 34rem);
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(245, 240, 231, 0.2);
+  overflow: hidden;
+}
+.fg-progress-bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--fg-gold), #fff4de);
+  transition: width 0.12s linear;
+}
+.fg-progress-label {
+  margin: 0;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-ink-soft);
+}
+.fg-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+/* ---------- mode calme : images fixes, pas de sticky etendu ---------- */
+.fg-wrap.fg-calm .fg-cross-track { height: 100svh; }
+.fg-wrap.fg-calm .fg-cross-sticky { position: static; height: 100svh; }
+.fg-wrap.fg-calm .fg-scene,
+.fg-wrap.fg-calm .fg-film,
+.fg-wrap.fg-calm .fg-progress-bar { transition: none !important; }
+/* Mode calme : images fixes, aucune transformation, aucune video. */
+.fg-wrap.fg-calm .fg-scene { transform: none !important; }
+.fg-wrap.fg-calm .fg-scene-video { display: none !important; }
+.fg-wrap.fg-calm .fg-drop,
+.fg-wrap.fg-calm .fg-drop-media,
+.fg-wrap.fg-calm .fg-btn { transition: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fg-root *, .fg-wrap * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+body.motion-off .fg-root *,
+body.motion-off .fg-wrap * { transition: none !important; animation: none !important; }
+body.motion-off .fg-wrap.fg-calm .fg-cross-sticky { position: static; }
+
+/* ---------- portrait et petits ecrans ---------- */
+@media (max-width: 780px) {
+  .fg-palm-grid { grid-template-columns: 1fr; }
+  .fg-palm-frame { aspect-ratio: 16 / 9; max-width: 30rem; margin-inline: auto; width: 100%; }
+  .fg-actions .fg-btn { flex: 1 1 10rem; }
+  .fg-scrub .fg-btn { flex: 1 1 8rem; }
+  .fg-panel-actions .fg-btn { flex: 1 1 8rem; }
+  .fg-hud { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem); }
+}
+
+/* Cibles carrees de 44 px sur petit ecran.
+   A 280 px de largeur de page, le cadre fait 256 px de large et 144 px de haut :
+   ecart horizontal minimal entre deux memes niveaux = 20 % de 256 = 51,2 px > 44 px,
+   ecart vertical minimal entre les deux niveaux = 36 % de 144 = 51,8 px > 44 px.
+   Aucun des sept reflets ne peut donc recouvrir son voisin. */
+@media (max-width: 520px) {
+  .fg-root { --fg-drop-size: 44px; }
+}
+
+@media (min-width: 781px) {
+  /* Aucune hauteur maximale ici : le cadre garde son ratio 16/9 exact, donc
+     l'image de fond et le calque des reflets se superposent parfaitement. */
+  .fg-palm-frame { width: 100%; }
+}
+
+.fg-wrap.fg-calm .fg-scrub { display: none; }
